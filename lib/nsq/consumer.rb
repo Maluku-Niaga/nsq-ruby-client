@@ -27,7 +27,7 @@ module Nsq
       # '127.0.0.1:4150') and the value is the Connection instance.
       @connections = {}
 
-      opts = {
+      setup = {
         topic: topic,
         channel: channel,
         max_in_flight: max_in_flight,
@@ -40,7 +40,7 @@ module Nsq
 
       if !nsqlookupds.empty?
         discover_repeatedly(
-          opts.merge(
+          setup.merge(
             nsqlookupds: nsqlookupds,
             interval: discovery_interval
           )
@@ -48,12 +48,12 @@ module Nsq
 
       elsif opts[:nsqd]
         nsqds = [opts[:nsqd]].flatten
-        opts[:max_in_flight] = max_in_flight_per_connection(max_in_flight, nsqds.size)
+        setup[:max_in_flight] = max_in_flight_per_connection(max_in_flight, nsqds.size)
 
-        nsqds.each{|d| add_connection(d, opts)}
+        nsqds.each{|d| add_connection(d, setup)}
 
       else
-        add_connection('127.0.0.1:4150', opts)
+        add_connection('127.0.0.1:4150', setup)
       end
     end
 
