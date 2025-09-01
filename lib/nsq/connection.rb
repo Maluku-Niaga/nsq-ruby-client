@@ -256,7 +256,7 @@ module Nsq
             fin(frame.id)
 
             # callbacks
-            @callbacks.callbacks[:max_attempts].call unless @callbacks.nil?
+            @callbacks.callbacks.dig(:max_attempts)&.call unless @callbacks.nil?
           else
             @queue.push(frame) if @queue
           end
