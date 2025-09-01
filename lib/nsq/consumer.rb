@@ -63,17 +63,17 @@ module Nsq
 
     class Callbacks
 
-      attr_reader :max_attempt_callback
+      attr_reader :callbacks
 
       def initialize(topic, channel)
         @topic = topic
         @channel = channel
 
-        @max_attempt_callback = nil
+        @callbacks = {}
       end
 
-      def max_attempt(&block)
-        @max_attempt_callback = lambda do
+      def max_attempts(&block)
+        @max_attempts[:max_attempts] = lambda do
           block.call(@topic, @channel)
         end
       end

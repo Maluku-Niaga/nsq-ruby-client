@@ -10,7 +10,7 @@ consumer = Nsq::Consumer.new(
 )
 
 
-consumer.callbacks.max_attempt do |topic, channel|
+consumer.callbacks.max_attempts do |topic, channel|
   # max_attempt block will be called when a message reaches the max_attempts
 
   puts "max attempt: #{topic} - #{channel}"
