@@ -3,7 +3,7 @@ require_relative 'client'
 module Nsq
   class Consumer < Client
 
-    attr_reader :max_in_flight
+    attr_reader :max_in_flight, :callbacks
 
     def initialize(opts = {})
       nsqlookupds = []
@@ -27,6 +27,8 @@ module Nsq
       # '127.0.0.1:4150') and the value is the Connection instance.
       @connections = {}
 
+      @callbacks = Callbacks.new(topic, channel)
+
       setup = {
         topic: topic,
         channel: channel,
@@ -35,7 +37,8 @@ module Nsq
         max_attempts: max_attempts,
         ssl_context: ssl_context,
         tls_options: tls_options,
-        tls_v1: tls_v1
+        tls_v1: tls_v1,
+        callbacks: callbacks,
       }
 
       if !nsqlookupds.empty?
@@ -57,6 +60,24 @@ module Nsq
       end
     end
 
+
+    class Callbacks
+
+      attr_reader :max_attempt_callback
+
+      def initialize(topic, channel)
+        @topic = topic
+        @channel = channel
+
+        @max_attempt_callback = nil
+      end
+
+      def max_attempt(&block)
+        @max_attempt_callback = lambda do
+          block.call(@topic, @channel)
+        end
+      end
+    end
 
     # pop the next message off the queue
     def pop
