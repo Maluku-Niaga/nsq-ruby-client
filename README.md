@@ -46,8 +46,13 @@ require 'nsq'
 consumer = Nsq::Consumer.new(
   nsqlookupd: '127.0.0.1:4161',
   topic: 'some-topic',
-  channel: 'some-channel'
+  channel: 'some-channel',
+  max_attempts: 3
 )
+
+consumer.on :max_attempts do |msg|
+  # ....
+end
 
 # Pop a message off the queue
 msg = consumer.pop
@@ -236,6 +241,20 @@ Notes:
   are connected to 3 nsqds, you may have up to 3 messages in flight at a time.
 - `max_attempts` is optional and if not set messages will be attempted until they
   are explicitly finshed.
+
+
+### `#on`
+NSQ handles each message in the queue. when a message reaches the max number of attempts (or other conditions),
+you can handle the action using `on` method.
+
+```Ruby
+consumer.on :max_attempts do |msg|
+  # logic...
+end
+
+msg = consumer.pop
+# ...
+```
 
 ### `#pop`
 
