@@ -33,6 +33,8 @@ module Nsq
       @max_in_flight = opts[:max_in_flight] || 1
       @tls_options = opts[:tls_options]
       @max_attempts = opts[:max_attempts]
+      @callbacks = opts[:callbacks] || nil
+
       if opts[:ssl_context]
         if @tls_options
           warn 'ssl_context and tls_options both set. Using tls_options. Ignoring ssl_context.'
@@ -252,6 +254,9 @@ module Nsq
           debug "<<< #{frame.body}"
           if @max_attempts && frame.attempts > @max_attempts
             fin(frame.id)
+
+            # callbacks
+            @callbacks.callbacks.dig(:max_attempts)&.call unless @callbacks.nil?
           else
             @queue.push(frame) if @queue
           end

@@ -27,6 +27,8 @@ module Nsq
       # '127.0.0.1:4150') and the value is the Connection instance.
       @connections = {}
 
+      @callbacks = Callbacks.new
+
       setup = {
         topic: topic,
         channel: channel,
@@ -35,7 +37,8 @@ module Nsq
         max_attempts: max_attempts,
         ssl_context: ssl_context,
         tls_options: tls_options,
-        tls_v1: tls_v1
+        tls_v1: tls_v1,
+        callbacks: callbacks,
       }
 
       if !nsqlookupds.empty?
@@ -57,6 +60,26 @@ module Nsq
       end
     end
 
+
+    class Callbacks
+      attr_reader :callbacks
+
+      def initialize
+        @callbacks = {}
+      end
+
+      def max_attempts(msg, &block)
+        @max_attempts[:max_attempts] = lambda do
+          block.call(msg)
+        end
+      end
+    end
+
+    # on method is used for handling consumer callbacks
+    def on(name, &block)
+      raise NameError, "the callback #{name} method is not defined in the callbacks object" unless @callbacks.respond_to?(name)
+      @callbacks.send(name, &block)
+    end
 
     # pop the next message off the queue
     def pop
